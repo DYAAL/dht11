@@ -1,0 +1,34 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_EXCMD	mixed	/number, pattern, mixed, or combineV2/
+!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PATTERN_LENGTH_LIMIT	96	/0 for no limit/
+!_TAG_PROC_CWD	/home/book/00_linux/07_newdriver/	//
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	5.9.0	//
+APP_DIR	build/Makefile	/^APP_DIR := $(shell pwd)\/..\/app$/;"	m
+ARCH	build/Makefile	/^ARCH ?= arm$/;"	m
+CROSS_COMPILE	build/Makefile	/^CROSS_COMPILE ?= arm-buildroot-linux-gnueabihf-$/;"	m
+KERN_DIR	build/Makefile	/^KERN_DIR ?= \/home\/book\/100ask_imx6ull-sdk\/Linux-4.9.88$/;"	m
+PWD	build/Makefile	/^PWD := $(shell pwd)$/;"	m
+all	build/Makefile	/^all: modules app$/;"	t
+app	build/Makefile	/^app:$/;"	t
+app_c_srcs	build/Makefile	/^app_c_srcs := $(filter %_app.c, $(wildcard $(APP_DIR)\/*.c))$/;"	m
+app_cpp_srcs	build/Makefile	/^app_cpp_srcs := $(filter %_app.cpp, $(wildcard $(APP_DIR)\/*.cpp))$/;"	m
+app_srcs	build/Makefile	/^app_srcs := $(app_c_srcs) $(app_cpp_srcs)$/;"	m
+clean	build/Makefile	/^clean:$/;"	t
+cp	build/Makefile	/^cp: cp_app cp_drv$/;"	t
+cp_app	build/Makefile	/^cp_app:$/;"	t
+cp_drv	build/Makefile	/^cp_drv:$/;"	t
+drv-y	build/Makefile	/^drv-y :=  drive_main_drv.o  driver_base_drv.o  driver_blocking_operate_drv.o  driver_function_dr/;"	m
+drv-y	build/Makefile	/^drv-y := $(module_objs)$/;"	m
+mnt_directory	build/Makefile	/^mnt_directory := \/home\/book\/remote\/mnt_imx6ull$/;"	m
+module_name	build/Makefile	/^module_name := drv$/;"	m
+module_objs	build/Makefile	/^module_objs := $(patsubst %.c, %.o, $(module_srcs))$/;"	m
+module_srcs	build/Makefile	/^module_srcs := $(filter %_drv.c, $(wildcard *.c))$/;"	m
+modules	build/Makefile	/^modules:$/;"	t
+reserved_line	build/Makefile	/^reserved_line := 25$/;"	m
+test_name	build/Makefile	/^test_name := drv_test$/;"	m
