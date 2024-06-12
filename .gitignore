@@ -25,7 +25,8 @@ doc/**/*.pdf
 modules.order
 modules.builtin
 *.o.cmd
-
+*.png
+*.md
     
     # 忽略所有的 .tmp 文件，包括那些在 /tmp 目录下
 src/compile_commands.json
