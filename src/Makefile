@@ -95,9 +95,10 @@ clean:
 	rm *.json
 
 # 拷贝模块到指定目录
-cp: cp_app cp_drv clean
+cp: all cp_app cp_drv clean
 
 cp_app:
+	rm -rf $(mnt_directory)/*
 	cp $(app_name) $(mnt_directory)
 
 cp_drv:

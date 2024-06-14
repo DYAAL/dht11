@@ -1,92 +1,72 @@
 #include "linux/err.h"
-#include <linux/device.h>
+#include "linux/platform_device.h"
 #include <linux/init.h>
 #include <linux/module.h>
-#include <linux/platform_device.h>
 
-struct resource my_resources1[] = {
-    [0] = {
-        .flags = IORESOURCE_MEM,
-        .name = "my_mem_resource1",
-    },
-    [1] = {
-        .name = "my_irq_resource1",
+static struct resource my_devs_source1[] = {
+    {
         .flags = IORESOURCE_IRQ,
+        .start = 1,
+        .end = 1,
     },
-};
-
-struct resource my_resources2[] = {
-    [0] = {
+    {
         .flags = IORESOURCE_MEM,
-        .name = "my_mem_resource1",
-    },
-    [1] = {
-        .name = "my_irq_resource1",
-        .flags = IORESOURCE_IRQ,
-    },
+    }
 };
+void my_dev_release(struct device* dev) {
 
-void my_release_func(struct device* dev)
-{
-    printk(KERN_INFO "-------------------------%s----------------------------\n", __FUNCTION__);
-}
-
-static struct platform_device pdev1 = {
-    .name = "platform_device_v1",
-    .id = 0,
-    .dev = {
-        .release = my_release_func,
-        .init_name = "platform_device_v1",
-        // .kobj = {
-        //     .name = "platform_v1",        kobj 千万不能赋值 否则会段错误，只能让系统赋值
-        // },
-    },
-    .num_resources = ARRAY_SIZE(my_resources1),
-    .resource = my_resources1,
 };
+static struct platform_device my_dev1
+    = {
+          .name = "my_dev1",
+          .dev = {
+              .init_name = "my_dev1",
+              .release = my_dev_release,
+          },
+          .id = -1,
+          .num_resources = 0,
+          .resource = my_devs_source1,
+      };
 
-// static struct platform_device pdev2 = {
-//     .name = "platform_device_v2",
-//     .id = 1,
-//     .dev = {
-//         .release = my_release_func,
-//         .init_name = "platform_device_v2",
-//         .kobj = {
-//             .name = "platform_v1",
-//         },
-//     },
-    
-//     .num_resources = ARRAY_SIZE(my_resources2),
-//     .resource = my_resources2,
-// };
-
-// static struct platform_device pdev2 = {
-//     .name = "platform_device_v2",
-//     .id = -1,
-//     .num_resources = ARRAY_SIZE(my_resources),
-//     .resource = my_resources,
-// };
+static struct platform_device my_dev2
+    = {
+          .name = "my_dev2",
+          .dev = {
+              .init_name = "my_dev2",
+              .release = my_dev_release,
+          },
+          .id = -1,
+          .num_resources = 0,
+          .resource = my_devs_source1,
+      };
 
 static int __init my_dev_init(void)
 {
-    int ret = platform_device_register(&pdev1);
-    if (IS_ERR_VALUE(ret)) {
-        printk(KERN_INFO "-------------------------%s----------------------------\n", __FUNCTION__);
+    int err;
 
-        return ret;
+    printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
+    err = platform_device_register(&my_dev1);
+    printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
+    if (IS_ERR_VALUE(err)) {
+        printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
+        return err;
     }
-    // ret = platform_device_register(&pdev2);
-    // if (IS_ERR_VALUE(ret)) {
-    //     printk(KERN_ERR "platform_device_register failed with %d\n", ret);
-    //     return ret;
-    // }
+    err = platform_device_register(&my_dev2);
+    printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
+    if (IS_ERR_VALUE(err)) {
+        printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
+        return err;
+    }
     return 0;
 }
 
 static void __exit my_dev_exit(void)
 {
-    // platform_device_unregister(&pdev2);
-    platform_device_unregister(&pdev1);
+    printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
+    platform_device_unregister(&my_dev1);
+    printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
+    platform_device_unregister(&my_dev2);
+    printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
 }
 
 module_init(my_dev_init);
