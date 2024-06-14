@@ -46,13 +46,11 @@ static int __init my_dev_init(void)
 
     printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
     err = platform_device_register(&my_dev1);
-    printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
     if (IS_ERR_VALUE(err)) {
         printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
         return err;
     }
     err = platform_device_register(&my_dev2);
-    printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
     if (IS_ERR_VALUE(err)) {
         printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
         return err;
@@ -64,9 +62,7 @@ static void __exit my_dev_exit(void)
 {
     printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
     platform_device_unregister(&my_dev1);
-    printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
     platform_device_unregister(&my_dev2);
-    printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
 }
 
 module_init(my_dev_init);
