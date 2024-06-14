@@ -50,6 +50,7 @@ static int __init my_dev_init(void)
         printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
         return err;
     }
+    
     err = platform_device_register(&my_dev2);
     if (IS_ERR_VALUE(err)) {
         printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
