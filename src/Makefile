@@ -9,13 +9,14 @@ DEVICE_DIR := $(PWD)
 DRIVER_DIR := $(PWD)
 
 # 模块名和测试名
+
 app_name := app_test
 driver_name := driver
-driver_reserved_line := 57
+driver_reserved_line := 56
 bus_name := bus
-bus_reserved_line := 58
+bus_reserved_line := 57
 device_name := device
-device_reserved_line := 59
+device_reserved_line := 58
 
 # 挂载目录路径
 mnt_directory := /home/book/remote/mnt_imx6ull
@@ -32,7 +33,6 @@ CROSS_COMPILE ?= arm-buildroot-linux-gnueabihf-
 driver_module_srcs := $(filter %_drv.c, $(wildcard *.c))
 # 将这些源文件转成对应的 .o 目标文件
 driver_module_objs := $(patsubst %.c, %.o, $(driver_module_srcs))
-
 # 设置编译内核模块的目标
 $(driver_name)-y := $(driver_module_objs)
 obj-m += $(driver_name).o
@@ -53,10 +53,11 @@ app_srcs := $(app_c_srcs) $(app_cpp_srcs)
 
 
 
+driver-y :=  dev_drv.o  driver_drv.o  file_ops_drv.o  main_drv.o
+bus-y :=  00_main_bus.o
+device-y :=  00_main_dev.o
 
-driver-y :=  main_drv.o
-bus-y :=  main_bus.o
-device-y :=  main_dev.o
+
 
 # 默认目标
 .PHONY: all modules app clean cp cp_app cp_drv
@@ -75,7 +76,9 @@ $(info Application sources: $(app_srcs))
 
 
 # 构建所有目标
-all: modules app 
+all:  modules app 
+
+
 
 modules:
 	sed -i '$(driver_reserved_line)s|.*|$(driver_name)-y := $(driver_module_objs)|' $(PWD)/Makefile

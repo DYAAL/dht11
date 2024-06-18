@@ -63,6 +63,6 @@ int PollStruct::set_to_signal_func(int fd)
 {
     fcntl(fd, F_SETOWN, getpid());
     int flags = fcntl(fd, F_GETFL);
-    fcntl(fd, F_SETFL, flags|FASYNC);
+    fcntl(fd, F_SETFL, flags | FASYNC);
     return 0;
 }

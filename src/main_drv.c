@@ -1,183 +1,106 @@
-#include "linux/device.h"
-#include "linux/err.h"
-#include "linux/export.h"
-#include "linux/fs.h"
-#include "linux/ioport.h"
-#include "linux/kdev_t.h"
-#include "linux/platform_device.h"
-#include <linux/cdev.h>
+#include "dev_drv.h"
+#include "driver_drv.h"
+#include "file_ops_drv.h"
+#include "marcos_drv.h"
+#include <linux/device.h>
 #include <linux/init.h>
 #include <linux/module.h>
+#include <linux/platform_device.h>
 #include <linux/slab.h>
+#include <linux/types.h>
+#include <linux/wait.h>
 
-#define MAX_MINOR 10 // 假设最大的minor值为10（从0到9）
+Driver_Register_Struct_P driver_register_struct_p;
 
-typedef struct {
-    bool used[MAX_MINOR];
-    int next_minor;
-} Minor_Struct, *Minor_Struct_P;
 
-typedef struct {
-    int major;
-    struct class* cls;
-    char* cls_name;
-    char* chr_dev_name;
-    Minor_Struct minor_struct;
-} Onece_Regist, *Onece_Regist_P;
-Onece_Regist_P onece_regist_p;
-
-typedef struct {
-    const char* dev_name;
-    struct resource* res;
-    int minor;
-} Device_Infor, *Device_Infor_P;
-
-void minor_struct_init(void)
+int sr04_drv_probe(struct platform_device* pdev)
 {
-    int i;
-    onece_regist_p->minor_struct.next_minor = 0;
-    for (i = 0; i < MAX_MINOR; ++i) {
-        onece_regist_p->minor_struct.used[i] = false;
+    print_kernel_infor(kern_info);
+    if (pdev->dev.of_node) {
+        printk(KERN_INFO "sr04_drv_probe: device tree node is valid\n");
+        driver_register_struct_p->minor_struct.current_minor = allocate_minor(driver_register_struct_p);
     }
 }
 
-int allocate_minor(void)
+int sr04_drv_remove(struct platform_device* pdev)
 {
-    int i;
-    for (i = onece_regist_p->minor_struct.next_minor; i < MAX_MINOR; ++i) {
-        if (!onece_regist_p->minor_struct.used[i]) {
-            onece_regist_p->minor_struct.used[i] = true;
-            return i;
-        }
-    }
-    // 如果循环回到开始还没有找到未使用的minor，则继续搜索
-    for (i = 0; i < onece_regist_p->minor_struct.next_minor; ++i) {
-        if (!onece_regist_p->minor_struct.used[i]) {
-            onece_regist_p->minor_struct.used[i] = true;
-            onece_regist_p->minor_struct.next_minor = i + 1; // 更新下一个开始搜索的位置
-            return i;
-        }
-    }
-    return -1; // 如果没有可用的minor，则返回-1
 }
 
-void release_minor(int minor)
-{
-    if (minor >= 0 && minor < MAX_MINOR && onece_regist_p->minor_struct.used[minor]) {
-        onece_regist_p->minor_struct.used[minor] = false;
-    }
-}
-
-int my_drv_probe(struct platform_device* pdev)
-{
-    printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
-
-    Device_Infor* device_infor = kmalloc(sizeof(Device_Infor), GFP_KERNEL);
-    if (!device_infor) {
-        printk(KERN_ERR "Failed to allocate memory for Device_Infor\n");
-        return -ENOMEM;
-    }
-
-    device_infor->minor = allocate_minor();
-
-    // 获取设备名称，如果没有则使用默认名称
-    if (pdev->dev.kobj.name) {
-        device_infor->dev_name = pdev->dev.kobj.name;
-    } else {
-        device_infor->dev_name = "unknown_device";
-    }
-
-    // 创建设备节点
-    struct device* dev = device_create(onece_regist_p->cls, NULL, MKDEV(onece_regist_p->major, device_infor->minor), NULL, "%s%d", device_infor->dev_name, device_infor->minor);
-    if (IS_ERR(dev)) {
-        printk(KERN_ERR "Failed to create device node\n");
-        release_minor(device_infor->minor);
-        kfree(device_infor);
-        return PTR_ERR(dev);
-    }
-    // 将设备信息保存到平台设备的私有数据中
-    platform_set_drvdata(pdev, device_infor);
-
-    return 0;
-}
-
-int my_drv_remove(struct platform_device* pdev)
-{
-    printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
-
-    // 获取之前存储的设备信息
-    Device_Infor* device_infor = platform_get_drvdata(pdev);
-    if (device_infor) {
-        // 销毁设备节点
-        release_minor(device_infor->minor);
-        device_destroy(onece_regist_p->cls, MKDEV(onece_regist_p->major, device_infor->minor));
-        // 释放设备信息内存
-        kfree(device_infor);
-    }
-    return 0;
-}
-const struct platform_device_id my_drv_id_table[] = {
-    { "my_dev1", 0 },
-    { "my_dev2", 0 },
+const struct platform_device_id sr04_id_table[] = {
     {},
 };
 
-const struct of_device_id my_drv_of_match[] = {};
-static struct platform_driver my_drv
-    = {
-          .probe = my_drv_probe,
-          .remove = my_drv_remove,
-          .id_table = my_drv_id_table,
-          .driver = {
-              .of_match_table = my_drv_of_match,
-              .name = "my_drv",
-          }
-      };
+const struct of_device_id sr04_of_match_table[] = {
+    {
+        .compatible = "my_device,sr04_compatible",
+    },
+    {},
+};
 
-static struct file_operations my_drv_fops = {
-    .open = NULL,
+static struct platform_driver sr04_platform_drv = {
+    .probe = sr04_drv_probe,
+    .remove = sr04_drv_remove,
+    .id_table = sr04_id_table,
+    .driver = {
+        .of_match_table = sr04_of_match_table,
+        .name = "sr04_drviver",
+    }
 };
 
 static int __init
-my_drv_init(void)
+sr04_drv_init(void)
 {
-    printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
-    onece_regist_p = kmalloc(sizeof(Onece_Regist), GFP_KERNEL);
-    if (!onece_regist_p) {
-        printk(KERN_ERR "Failed to allocate memory for Onece_Regist\n");
-        return -ENOMEM;
+    print_kernel_infor(kern_info);
+    driver_register_struct_p = kmalloc(sizeof(Driver_Register_Struct), GFP_KERNEL);
+    if (IS_ERR(driver_register_struct_p)) {
+        printk(KERN_ERR "kmalloc driver_register_struct_p failed\n");
+        // print_kernel_infor(kern_err);
+        return PTR_ERR(driver_register_struct_p);
     }
-    onece_regist_p->major = 0;
-    onece_regist_p->cls_name = "my_class_name";
-    onece_regist_p->chr_dev_name = "myZ_chr_dev_name";
-    minor_struct_init();
-    onece_regist_p->major
-        = register_chrdev(onece_regist_p->major, onece_regist_p->chr_dev_name, &my_drv_fops);
-    onece_regist_p->cls = class_create(THIS_MODULE, onece_regist_p->cls_name);
-    if (IS_ERR(onece_regist_p->cls)) {
-        printk(KERN_ERR "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
-        unregister_chrdev(onece_regist_p->major, onece_regist_p->chr_dev_name);
-        return PTR_ERR(onece_regist_p->cls);
+
+    // /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */ 申请内存
+    init_struct(driver_register_struct_p);
+    driver_register_struct_p->major = register_chrdev(driver_register_struct_p->major, driver_register_struct_p->chr_dev_name, &sr04_drv_fops);
+    if (IS_ERR_VALUE(driver_register_struct_p->major)) {
+        printk(KERN_ERR "register_chrdev failed\n");
+        // print_kernel_infor(kern_err);
+        goto register_chrdev_err;
     }
-    int ret = platform_driver_register(&my_drv);
+    // /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */ 创建 chrdev
+    driver_register_struct_p->cls
+        = class_create(THIS_MODULE, driver_register_struct_p->cls_name);
+    if (IS_ERR(driver_register_struct_p->cls)) {
+        // print_kernel_infor(kern_err);
+        goto class_create_err;
+    }
+    // /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */ 创建 class
+    int ret
+        = platform_driver_register(&sr04_platform_drv);
     if (IS_ERR_VALUE(ret)) {
-        printk(KERN_ERR "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
-        class_destroy(onece_regist_p->cls);
-        unregister_chrdev(onece_regist_p->major, onece_regist_p->chr_dev_name);
-        return ret;
+        print_kernel_infor(kern_err);
+        goto platform_driver_register_err;
     }
+
+    // / /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */ 创建 platform_driver
     return 0;
+platform_driver_register_err:
+    class_destroy(driver_register_struct_p->cls);
+class_create_err:
+    unregister_chrdev(driver_register_struct_p->major, driver_register_struct_p->chr_dev_name);
+register_chrdev_err:
+    kfree(driver_register_struct_p);
+    return -1;
 }
 
-static void __exit my_drv_exit(void)
+static void __exit sr04_drv_exit(void)
 {
-    printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
-    platform_driver_unregister(&my_drv);
-    class_destroy(onece_regist_p->cls);
-    unregister_chrdev(onece_regist_p->major, onece_regist_p->chr_dev_name);
-    kfree(onece_regist_p);
+    print_kernel_infor(kern_info);
+    class_destroy(driver_register_struct_p->cls);
+    unregister_chrdev(driver_register_struct_p->major, driver_register_struct_p->chr_dev_name);
+    kfree(driver_register_struct_p);
 }
 
-module_init(my_drv_init);
-module_exit(my_drv_exit);
+module_init(sr04_drv_init);
+module_exit(sr04_drv_exit);
+
 MODULE_LICENSE("GPL");
