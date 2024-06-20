@@ -18,6 +18,9 @@ typedef struct {
 
 typedef struct {
     bool whether_data;
+    unsigned long long data_us;
+    unsigned long long start_time;
+    unsigned long long end_time;
 } Device_Data, *Device_Data_P;
 
 typedef struct {
@@ -27,4 +30,5 @@ typedef struct {
 } Device_Register_Struct, *Device_Register_Struct_P;
 
 void device_struct_init(Device_Register_Struct_P this, int minor);
+void reset_device_data(Device_Register_Struct_P this);
 #endif // __DEV_DRV_H__

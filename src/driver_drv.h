@@ -14,7 +14,7 @@ typedef struct {
     Minor_Struct minor_struct;
 } Driver_Register_Struct, *Driver_Register_Struct_P;
 
-void print_kernel_infor(Infor_Level infor_level);
+
 int allocate_minor(Driver_Register_Struct* this);
 void release_minor(int minor, Driver_Register_Struct* this);
 void init_struct(Driver_Register_Struct_P this);

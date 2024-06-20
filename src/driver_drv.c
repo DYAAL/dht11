@@ -10,38 +10,6 @@
 
 #include <asm/string.h>
 
-void print_kernel_infor(Infor_Level infor_level)
-{
-    switch (infor_level) {
-    case kern_emerg:
-        printk(KERN_EMERG "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
-        break;
-    case kern_alert:
-        printk(KERN_ALERT "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
-        break;
-    case kern_crit:
-        printk(KERN_CRIT "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
-        break;
-    case kern_err:
-        printk(KERN_ERR "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
-        break;
-    case kern_warning:
-        printk(KERN_WARNING "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
-        break;
-    case kern_notice:
-        printk(KERN_NOTICE "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
-        break;
-    case kern_info:
-        printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
-        break;
-    case kern_debug:
-        printk(KERN_DEBUG "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
-        break;
-    default:
-        printk(KERN_DEFAULT "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
-        break;
-    }
-}
 
 static void minor_struct_init(Driver_Register_Struct* this)
 {

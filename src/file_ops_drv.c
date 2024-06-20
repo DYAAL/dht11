@@ -9,7 +9,6 @@
 #include "marcos_drv.h"
 #include <asm/delay.h>
 #include <asm/uaccess.h>
-
 #include <linux/slab.h>
 
 extern Driver_Register_Struct_P driver_register_struct_p;
@@ -17,49 +16,22 @@ extern Device_Register_Struct_P device_register_struct_ps[MAX_MINOR];
 
 ssize_t sr04_read(struct file* filp, char __user* usr_buf, size_t size, loff_t* offset)
 {
-    int count_us = 0;
-    int timeout = 1000000;
+    printk(KERN_INFO "file: %s, function: %s, line: %d\n", __FILE__, __func__, __LINE__);
     int minor = MINOR(filp->f_inode->i_rdev);
     Device_Register_Struct_P device_register_struct_p = device_register_struct_ps[minor];
-    unsigned long irq_flags = 0;
-    // ─── 关闭本地中断 ──────────────────────────────────────────────────────────
-    local_irq_save(irq_flags);
+
     // ─── 发送10us高电平 ───────────────────────────────────────────────────────────────
     gpiod_set_value(device_register_struct_p->device_gpio_resource.gpio_desc_pp[0], 1);
     udelay(15);
     gpiod_set_value(device_register_struct_p->device_gpio_resource.gpio_desc_pp[0], 0);
     // ─── 查看gpio状态 ────────────────────────────────────────────────────────
-    while (gpiod_get_value(device_register_struct_p->device_gpio_resource.gpio_desc_pp[1]) == 0 && timeout--) {
-        udelay(1);
-    }
-    if (timeout == 0) {
-        printk("timeout\n");
-        print_kernel_infor(kern_err);
-        local_irq_restore(irq_flags);
-        return -EAGAIN;
-    }
-    timeout = 1000000;
-    while (gpiod_get_value(device_register_struct_p->device_gpio_resource.gpio_desc_pp[1]) == 1 && timeout--) {
-        udelay(1);
-        count_us++;
-    }
-    if (timeout == 0) {
-        printk("timeout\n");
-        print_kernel_infor(kern_err);
-        local_irq_restore(irq_flags);
-        return -EAGAIN;
-    }
-    // ─── 开中断 ─────────────────────────────────────────────────────────────────────
-    else {
-        local_irq_restore(irq_flags);
-        int ret = copy_to_user(usr_buf, &count_us, sizeof(count_us));
-        if (IS_ERR_VALUE(ret)) {
-            printk("copy_to_user error\n");
-            print_kernel_infor(kern_err);
-            return -EAGAIN;
-        }
-        return 0;
-    }
+    // wait_event_interruptible(device_register_struct_p->device_infor.wait_queue, device_register_struct_p->device_data.whether_data);
+    // int ret = copy_to_user(usr_buf, &device_register_struct_p->device_data.data_us, sizeof(int));
+    // reset_device_data(device_register_struct_p);
+    // if (ret < 0) {
+    //     return -EAGAIN;
+    // }
+    return sizeof(int);
 };
 
 ssize_t sr04_write(struct file* filp, const char __user* usr_buf, size_t size, loff_t* offset)
@@ -78,8 +50,8 @@ int sr04_release(struct inode* inode_p, struct file* filp)
     return 0;
 };
 struct file_operations sr04_drv_fops = {
-    .open = sr04_open,
-    .release = sr04_release,
+    .open = NULL,
+    .release = NULL,
     .read = sr04_read,
     .write = sr04_write,
 };
